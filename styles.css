@@ -1,0 +1,199 @@
+body {
+    margin: 0;
+    font-family: 'Open Sans', sans-serif;
+    color: #0b1f3a;
+    background: #ffffff;
+}
+
+.header {
+    background: #0b2a52;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+}
+
+.logo-area img {
+    width: 100px;
+    margin-right: 30px;
+}
+
+.logo-area h1 {
+    margin: 0;
+    font-family: 'Playfair Display', serif;
+}
+
+.slogan {
+    font-size: 0.9em;
+    color: #d4af37;
+}
+
+nav a {
+    color: white;
+    margin-left: 15px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.hero {
+    background: linear-gradient(rgba(11,42,82,0.9), rgba(11,42,82,0.9)),
+                url('hero.jpg');
+    background-size: cover;
+    text-align: center;
+    padding: 80px 20px;
+    color: white;
+}
+
+.hero h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2em;
+}
+
+.btn-primary {
+    background: #d4af37;
+    color: #0b2a52;
+    padding: 12px 25px;
+    text-decoration: none;
+    margin: 10px;
+    display: inline-block;
+    font-weight: bold;
+}
+
+.btn-secondary {
+    border: 2px solid #d4af37;
+    color: white;
+    padding: 12px 25px;
+    text-decoration: none;
+}
+
+.section {
+    padding: 60px 40px;
+}
+
+.section h2 {
+    font-family: 'Playfair Display', serif;
+    color: #0b2a52;
+}
+
+.light {
+    background: #f5f7fb;
+}
+
+.two-columns {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+.application-form {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 6px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+.checkbox-group {
+    border: 1px solid #ccc;
+    padding: 15px;
+    background: #f9f9f9;
+}
+
+.checkbox-item {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.hint {
+    font-style: italic;
+    color: #777;
+}
+
+/* Existing styles above */
+
+/* File upload styling */
+input[type="file"] {
+    padding: 6px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.required {
+    color: red;
+    font-weight: bold;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    flex: 1;
+    border-left: 5px solid #d4af37;
+}
+
+.pricing {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.price-box {
+    background: #0b2a52;
+    color: white;
+    padding: 25px;
+    flex: 1;
+}
+
+.subjects-box label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.fee-box {
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
+
+
+footer {
+    background: #0b2a52;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
