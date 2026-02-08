@@ -350,7 +350,19 @@ function generateStudentNumber() {
         alert("Please select at least one subject.");
         e.preventDefault();
     }
+});document.getElementById("applicationForm").addEventListener("submit", function () {
+    const btn = this.querySelector("button[type='submit']");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
 });
+
+
+    document.getElementById("applicationForm").addEventListener("submit", function () {
+    const btn = this.querySelector("button[type='submit']");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
+});
+
 
 </script>
 
