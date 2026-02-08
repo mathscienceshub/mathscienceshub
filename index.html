@@ -114,7 +114,17 @@
 <!-- APPLICATION FORM -->
 <section id="registration" class="section">
     <h2>Learner Application Form</h2>
-    <form id="applicationForm" enctype="multipart/form-data">
+    <form id="applicationForm"
+      action="https://formsubmit.co/mathsandsciences.hub24@gmail.com"
+      method="POST"
+      enctype="multipart/form-data">
+
+      <input type="hidden" name="_subject" value="New Learner Application - Math & Sciences Hub">
+<input type="hidden" name="_template" value="table">
+<input type="hidden" name="_captcha" value="false">
+<input type="hidden" name="_next" value="https://your-site-url/success.html">
+
+
 
         <label>Student Number</label>
         <input type="text" id="studentNumber" name="student_number" readonly>
@@ -335,16 +345,13 @@ function generateStudentNumber() {
 
     // ========== FORM SUBMISSION ==========
     document.getElementById("applicationForm").addEventListener("submit", function(e) {
-        const checkedSubjects = subjectsContainer.querySelectorAll("input:checked");
-        if (checkedSubjects.length === 0) {
-            alert("Please select at least one subject.");
-            e.preventDefault();
-            return;
-        }
+    const checkedSubjects = subjectsContainer.querySelectorAll("input:checked");
+    if (checkedSubjects.length === 0) {
+        alert("Please select at least one subject.");
+        e.preventDefault();
+    }
+});
 
-        alert(`Application submitted successfully! Your Student Number is: ${studentNumberField.value}`);
-        generateStudentNumber(); // Prepare next number
-    });
 </script>
 
 </body>
