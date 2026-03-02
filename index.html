@@ -24,6 +24,7 @@
         <a href="#programs">Programs</a>
         <a href="#packages">Packages</a>
         <a href="#how">How It Works</a>
+        <a href="#tutor-verification">Tutors</a>
         <a href="#registration">Register</a>
         <a href="#contact">Contact</a>
     </nav>
@@ -111,6 +112,49 @@
     </ul>
 </section>
 
+
+
+<!-- TUTOR VERIFICATION -->
+<section id="tutor-verification" class="section">
+    <h2>Tutor Verification</h2>
+    <p>Use this tool to confirm that a tutor is officially verified by <strong>Math & Sciences Hub</strong>.</p>
+
+    <div class="verify-panel">
+        <label for="tutorCode"><strong>Enter Tutor Verification Code</strong></label>
+        <div class="verify-row">
+            <input id="tutorCode" type="text" placeholder="e.g., MSH-TUT-2026-001" autocomplete="off">
+            <button type="button" class="btn-primary" onclick="verifyTutor()">Verify</button>
+        </div>
+        <div id="verifyResult" class="verify-result" aria-live="polite"></div>
+    </div>
+
+    <h3>Verified Tutor Directory</h3>
+    <div class="table-wrap">
+        <table id="tutorTable">
+            <thead>
+                <tr>
+                    <th>Verified Tutor</th>
+                    <th>Role</th>
+                    <th>Qualifications</th>
+                    <th>Subjects</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="5">Loading tutors…</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="disclaimer">
+        <strong>Safeguarding Notice:</strong> Public tutor information is limited for child protection and POPIA compliance.
+        Full verification records can be made available to school management upon request.
+    </p>
+
+    <!-- Paste updated tutor JSON here OR upload a tutors.json file in the same folder as index.html -->
+    <script id="tutorData" type="application/json">[]</script>
+</section>
+
 <!-- APPLICATION FORM -->
 <section id="registration" class="section">
     <h2>Learner Application Form</h2>
@@ -150,7 +194,7 @@
 
         <div class="form-group">
             <label>Grade *</label>
-            <select id="grade" name="grade" onchange="generateStudentNumber(); updateSubjects();" required>
+            <select id="grade" name="grade" onchange="previewStudentNumber(); updateSubjects();" required>
                 <option value="">Select Grade</option>
                 <option value="8">Grade 8</option>
                 <option value="9">Grade 9</option>
@@ -244,6 +288,10 @@
             </div>
         </div>
 
+        <p id="submitMessage" style="display:none; color:green; font-weight:bold;">
+    Submitting application… please do not refresh.
+</p>
+
         <button type="submit" class="btn-primary">Submit Application</button>
     </form>
 </section>
@@ -251,7 +299,8 @@
 <!-- CONTACT -->
 <section id="contact" class="section light">
     <h2>Contact Us</h2>
-    <p>📞 065 645 8862</p>
+    <p>📞 078 204 3618</p>
+    <p>📞 065 645 8862 (alternate)</p>
     <p>📧 info@mathscienceshub.co.za</p>
     <p>📍 School-based tutoring centre</p>
 </section>
@@ -274,13 +323,40 @@
     const totalFeeDisplay = document.getElementById("totalFee");
     const studentNumberField = document.getElementById("studentNumber");
 
-   // ========== AUTOMATIC STUDENT NUMBER GENERATION (PERSISTENT) ==========
-function generateStudentNumber() {
+   // ========== AUTOMATIC STUDENT NUMBER GENERATION (PREVIEW + COMMIT ON SUBMIT) ==========
+function previewStudentNumber() {
     const grade = gradeSelect.value;
     if (!grade) {
         studentNumberField.value = "";
         return;
     }
+
+    const year = new Date().getFullYear();
+    const gradePadded = String(grade).padStart(2, "0");
+    const storageKey = `appCount_${year}_${gradePadded}`;
+
+    const saved = localStorage.getItem(storageKey);
+    const nextCount = saved ? (parseInt(saved, 10) + 1) : 1;
+    const paddedCount = String(nextCount).padStart(3, "0");
+
+    studentNumberField.value = `MSH${year}${gradePadded}${paddedCount}`;
+}
+
+function commitStudentNumber() {
+    const grade = gradeSelect.value;
+    if (!grade) return;
+
+    const year = new Date().getFullYear();
+    const gradePadded = String(grade).padStart(2, "0");
+    const storageKey = `appCount_${year}_${gradePadded}`;
+
+    const saved = localStorage.getItem(storageKey);
+    const newCount = saved ? (parseInt(saved, 10) + 1) : 1;
+    localStorage.setItem(storageKey, newCount);
+
+    const paddedCount = String(newCount).padStart(3, "0");
+    studentNumberField.value = `MSH${year}${gradePadded}${paddedCount}`;
+}
 
     const year = new Date().getFullYear();
     const gradePadded = String(grade).padStart(2, "0"); // ensures 08, 09, 10, 11, 12
@@ -311,6 +387,7 @@ function generateStudentNumber() {
             const label = document.createElement("label");
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
+            checkbox.name = "subjects[]";
             checkbox.value = subj;
             checkbox.addEventListener("change", calculateFee);
             label.appendChild(checkbox);
@@ -345,6 +422,8 @@ function generateStudentNumber() {
 
     // ========== FORM SUBMISSION ==========
     document.getElementById("applicationForm").addEventListener("submit", function(e) {
+    // Commit the student number counter only when submitting (prevents skipping)
+    commitStudentNumber();
     const checkedSubjects = subjectsContainer.querySelectorAll("input:checked");
     if (checkedSubjects.length === 0) {
         alert("Please select at least one subject.");
@@ -359,11 +438,104 @@ function generateStudentNumber() {
 
     document.getElementById("applicationForm").addEventListener("submit", function () {
     const btn = this.querySelector("button[type='submit']");
+    const msg = document.getElementById("submitMessage");
+
     btn.disabled = true;
     btn.textContent = "Submitting...";
+    msg.style.display = "block";
 });
 
 
+
+
+
+// ========== TUTOR VERIFICATION (JSON-DRIVEN) ==========
+let TUTORS = [];
+
+async function loadTutors() {
+    // 1) Try to fetch tutors.json if present (recommended)
+    try {
+        const res = await fetch('tutors.json', { cache: 'no-store' });
+        if (res.ok) {
+            TUTORS = await res.json();
+            renderTutorTable();
+            return;
+        }
+    } catch (e) { /* ignore */ }
+
+    // 2) Fallback: read inline JSON block
+    try {
+        const el = document.getElementById('tutorData');
+        if (el && el.textContent.trim()) {
+            TUTORS = JSON.parse(el.textContent.trim());
+        }
+    } catch (e) {
+        TUTORS = [];
+    }
+
+    renderTutorTable();
+}
+
+function renderTutorTable() {
+    const tbody = document.querySelector('#tutorTable tbody');
+    if (!tbody) return;
+
+    if (!Array.isArray(TUTORS) || TUTORS.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">No tutors published yet. (Upload tutors.json or paste tutor data into the page.)</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = TUTORS.map(t => {
+        const subjects = Array.isArray(t.subjects) ? t.subjects.join(', ') : (t.subjects || '');
+        return `
+            <tr>
+                <td><strong>${escapeHtml(t.displayName || t.name || '')}</strong><br><small>${escapeHtml(t.code || '')}</small></td>
+                <td>${escapeHtml(t.role || '')}</td>
+                <td>${escapeHtml([t.qualification, t.institution].filter(Boolean).join(' | '))}</td>
+                <td>${escapeHtml(subjects)}</td>
+                <td>${t.status === 'Verified' ? '<span class="status verified">Verified</span>' : '<span class="status pending">Pending</span>'}</td>
+            </tr>`;
+    }).join('');
+}
+
+function verifyTutor() {
+    const input = document.getElementById('tutorCode');
+    const out = document.getElementById('verifyResult');
+    if (!input || !out) return;
+
+    const code = (input.value || '').trim().toUpperCase();
+    if (!code) {
+        out.innerHTML = '<span class="status pending">Please enter a verification code.</span>';
+        return;
+    }
+
+    const tutor = (TUTORS || []).find(t => String(t.code || '').toUpperCase() === code);
+    if (!tutor) {
+        out.innerHTML = `<div class="verify-card bad"><strong>Not Found</strong><br>Code <em>${escapeHtml(code)}</em> does not match any published tutor record.</div>`;
+        return;
+    }
+
+    const subjects = Array.isArray(tutor.subjects) ? tutor.subjects.join(', ') : (tutor.subjects || '');
+    out.innerHTML = `
+        <div class="verify-card good">
+            <strong>Verified Tutor</strong><br>
+            <b>${escapeHtml(tutor.displayName || tutor.name || '')}</b><br>
+            <span>${escapeHtml(tutor.role || '')}</span><br>
+            <small>${escapeHtml([tutor.qualification, tutor.institution].filter(Boolean).join(' | '))}</small><br>
+            <small><b>Subjects:</b> ${escapeHtml(subjects)}</small>
+        </div>`;
+}
+
+function escapeHtml(str) {
+    return String(str || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+document.addEventListener('DOMContentLoaded', loadTutors);
 </script>
 
 </body>
