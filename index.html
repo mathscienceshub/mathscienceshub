@@ -25,6 +25,7 @@
         <a href="#packages">Packages</a>
         <a href="#how">How It Works</a>
         <a href="#tutor-verification">Tutors</a>
+        <a href="#learner-verification">Learner Verify</a>
         <a href="#registration">Register</a>
         <a href="#contact">Contact</a>
     </nav>
@@ -154,6 +155,45 @@
     <!-- Paste updated tutor JSON here OR upload a tutors.json file in the same folder as index.html -->
     <script id="tutorData" type="application/json">[]</script>
 </section>
+
+
+<!-- LEARNER VERIFICATION -->
+<section id="learner-verification" class="section light">
+    <h2>Learner Verification</h2>
+    <p style="max-width:780px;margin:0 auto 18px;line-height:1.6;text-align:center;">
+        For privacy, no learner information is displayed until both the student number and ID number have been verified against the institutional register through the backend API.
+    </p>
+
+    <div class="verification-card" style="max-width:780px;margin:0 auto;background:#fff;border:1px solid #d8e2f3;border-radius:16px;padding:22px;box-shadow:0 8px 20px rgba(17,37,63,.06);">
+        <form id="learnerVerifyForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+            <div class="form-group">
+                <label for="verifyStudentNumber">Student Number</label>
+                <input type="text" id="verifyStudentNumber" autocomplete="off" required>
+            </div>
+            <div class="form-group">
+                <label for="verifyIdNumber">ID Number</label>
+                <input type="text" id="verifyIdNumber" autocomplete="off" required>
+            </div>
+            <div style="grid-column:1 / -1;">
+                <button type="submit" class="btn-primary">Verify Learner</button>
+            </div>
+        </form>
+
+        <div id="learnerVerifyStatus" style="display:none;margin-top:16px;padding:12px 14px;border-radius:10px;"></div>
+
+        <div id="learnerVerifyResult" style="display:none;margin-top:18px;border:1px solid #d8e2f3;border-radius:14px;overflow:hidden;">
+            <div style="background:#0d47a1;color:#fff;padding:12px 16px;font-weight:bold;">Verified Learner Record</div>
+            <div style="padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 18px;">
+                <div><strong>Full Name</strong><br><span id="verifyOutName"></span></div>
+                <div><strong>Student Number</strong><br><span id="verifyOutStudent"></span></div>
+                <div><strong>Grade</strong><br><span id="verifyOutGrade"></span></div>
+                <div><strong>School Name</strong><br><span id="verifyOutSchool"></span></div>
+                <div><strong>Status</strong><br><span id="verifyOutStatus"></span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
 
 <!-- APPLICATION FORM -->
 <section id="registration" class="section">
@@ -358,6 +398,21 @@ function commitStudentNumber() {
     studentNumberField.value = `MSH${year}${gradePadded}${paddedCount}`;
 }
 
+    const year = new Date().getFullYear();
+    const gradePadded = String(grade).padStart(2, "0"); // ensures 08, 09, 10, 11, 12
+    const storageKey = `appCount_${year}_${gradePadded}`;
+
+    // Retrieve last saved count, increment
+    let count = localStorage.getItem(storageKey);
+    count = count ? parseInt(count) + 1 : 1;
+    localStorage.setItem(storageKey, count);
+
+    const paddedCount = String(count).padStart(3, "0"); // ensures 001, 002, 010 etc.
+
+    studentNumberField.value = `MSH${year}${gradePadded}${paddedCount}`;
+}
+
+
     // ========== SUBJECT SELECTION & FEE CALCULATION ==========
     function updateSubjects() {
         subjectsContainer.innerHTML = "";
@@ -367,8 +422,7 @@ function commitStudentNumber() {
             return;
         }
 
-        const gradeNum = parseInt(grade, 10);
-        const subjectList = gradeNum <= 9 ? PRICING["8-9"].subjects : PRICING["10-12"].subjects;
+        const subjectList = grade <= 9 ? PRICING["8-9"].subjects : PRICING["10-12"].subjects;
         subjectList.forEach(subj => {
             const label = document.createElement("label");
             const checkbox = document.createElement("input");
@@ -390,8 +444,7 @@ function commitStudentNumber() {
         const grade = gradeSelect.value;
         let total = PRICING.registrationFee;
         if (selectedSubjects.length > 0) {
-            const gradeNum = parseInt(grade, 10);
-            const pricingInfo = gradeNum <= 9 ? PRICING["8-9"] : PRICING["10-12"];
+            const pricingInfo = grade <= 9 ? PRICING["8-9"] : PRICING["10-12"];
             total += pricingInfo.primary + (selectedSubjects.length - 1) * pricingInfo.additional;
         }
         totalFeeDisplay.textContent = total;
@@ -399,8 +452,7 @@ function commitStudentNumber() {
         // Determine package
         const packageField = document.getElementById("packageName");
         if (!packageField) return;
-        const gradeNum = parseInt(grade, 10);
-        if (gradeNum <= 9) packageField.value = "Senior Phase Support Package";
+        if (grade <= 9) packageField.value = "Senior Phase Support Package";
         else {
             if (selectedSubjects.includes("Mathematics") && selectedSubjects.includes("Physical Sciences")) packageField.value = "STEM Package";
             else if (selectedSubjects.includes("Mathematics Literacy") && selectedSubjects.includes("Accounting")) packageField.value = "Commerce Package";
@@ -524,6 +576,71 @@ function escapeHtml(str) {
 }
 
 document.addEventListener('DOMContentLoaded', loadTutors);
+</script>
+
+
+<script>
+(function () {
+    const form = document.getElementById('learnerVerifyForm');
+    if (!form) return;
+    const statusBox = document.getElementById('learnerVerifyStatus');
+    const resultBox = document.getElementById('learnerVerifyResult');
+
+    function clearResult() {
+        resultBox.style.display = 'none';
+        ['verifyOutName','verifyOutStudent','verifyOutGrade','verifyOutSchool','verifyOutStatus'].forEach(function(id){
+            const el = document.getElementById(id);
+            if (el) el.textContent = '';
+        });
+    }
+
+    function setStatus(message, ok) {
+        statusBox.style.display = message ? 'block' : 'none';
+        statusBox.textContent = message || '';
+        statusBox.style.background = ok ? '#eefaf1' : '#fff0f0';
+        statusBox.style.border = ok ? '1px solid #c9e7d1' : '1px solid #f1c1c1';
+        statusBox.style.color = ok ? '#0f6b2b' : '#9b1c1c';
+    }
+
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        clearResult();
+        setStatus('', false);
+
+        const studentNumber = document.getElementById('verifyStudentNumber').value.trim();
+        const idNumber = document.getElementById('verifyIdNumber').value.trim();
+
+        if (!studentNumber || !idNumber) {
+            setStatus('Enter both the student number and the ID number.', false);
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/verify-learner', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ studentNumber, idNumber })
+            });
+            const payload = await response.json();
+
+            if (!response.ok || !payload.verified) {
+                setStatus(payload.message || 'Verification failed. Check the student number and ID number, then try again.', false);
+                return;
+            }
+
+            document.getElementById('verifyOutName').textContent = payload.learner.fullName || '';
+            document.getElementById('verifyOutStudent').textContent = payload.learner.studentNumber || '';
+            document.getElementById('verifyOutGrade').textContent = payload.learner.grade || '';
+            document.getElementById('verifyOutSchool').textContent = payload.learner.schoolName || '';
+            document.getElementById('verifyOutStatus').textContent = payload.learner.status || '';
+
+            resultBox.style.display = 'block';
+            setStatus('Verification successful.', true);
+        } catch (error) {
+            setStatus('The verification service is currently unavailable. Please try again later.', false);
+        }
+    });
+})();
 </script>
 
 </body>
