@@ -1,0 +1,29 @@
+Buttons setup for Tutor Website Sync
+
+Files:
+1. Math_and_Sciences_Hub_Full_Institution_System_MSH_buttons_ready.xlsm
+2. modTutorWebsiteSync_v2.bas
+3. modTutorSyncButtons.bas
+
+Steps:
+1. Open the buttons-ready workbook.
+2. Press Alt + F11.
+3. Remove any older modTutorWebsiteSync module.
+4. Import modTutorWebsiteSync_v2.bas.
+5. Import modTutorSyncButtons.bas.
+6. Save the workbook.
+7. Press Alt + F8 and run SetupTutorWebsiteSync once.
+8. Press Alt + F8 and run InstallTutorSyncButtons once.
+9. Go to TUTOR_WEBSITE_SYNC.
+10. Use the buttons there.
+
+Buttons created:
+- Setup Tutor Sync
+- Choose Website Folder
+- Export Tutors JSON
+- Open Website Folder
+- Export + Open Folder
+
+Notes:
+- EXPORTS remains for learner exports only.
+- TUTOR_WEBSITE_SYNC is the safe control panel for website sync.
